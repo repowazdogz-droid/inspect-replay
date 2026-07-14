@@ -67,13 +67,15 @@ blaming it.
 pip install inspect-replay
 ```
 
-Or from a clone:
+The bundled example logs live in the repo, not the wheel, so clone it to run the
+command above:
 
 ```console
 git clone https://github.com/repowazdogz-droid/inspect-replay
 cd inspect-replay
 pip install -e ".[dev]"
 pytest
+inspect-replay compare examples/baseline.eval examples/sample-regression.eval
 ```
 
 Requires Python 3.11+ and `inspect_ai`.

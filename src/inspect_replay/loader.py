@@ -50,7 +50,7 @@ def load_log(path: str | Path) -> EvalLog:
     try:
         log = read_eval_log(str(p))
     except Exception as exc:
-        raise LoadError(p, f"{type(exc).__name__}: {exc}") from exc
+        raise LoadError(p, _explain(exc)) from exc
 
     # read_eval_log is tolerant of some malformed input. Guard the invariants
     # the rest of the tool relies on rather than discovering them downstream.
