@@ -1,0 +1,41 @@
+Evaluation: CHANGED
+  old: examples/baseline.eval
+  new: examples/sample-regression.eval
+
+Reported metrics:
+- results.exact_match.accuracy: 0.75 → 0.5
+- results.completed_samples: 8 → 7
+
+Configuration:
+- no recorded configuration field changed
+- 24 other field(s): unchanged
+- 5 field(s): UNKNOWN, not recorded in at least one log (not the same as unchanged): model.base_url, model.roles, sandbox, tools, revision.dirty
+
+Samples (unit: sample):
+- 8 in old log, 8 in new log
+- 8 aligned (aligned on recorded sample id and epoch)
+- 4 unchanged
+- 2 newly failing
+- 1 newly passing
+- 1 errors introduced
+- 7 carry a comparable score on both sides (the only denominator a pass rate may be computed over)
+
+Changed samples:
+  q1::1: newly failing
+      exact_match: C → I
+  q2::1: newly failing
+      exact_match: C → I
+  q4::1: error introduced
+      error: ToolError: bash sandbox exited with code 137 (out of memory)
+  q7::1: newly passing
+      exact_match: I → C
+
+What changed alongside the result (ranked; co-occurrence, not causation):
+1. The evaluation's own reported metrics changed (exact_match.accuracy: 0.75 to 0.5). These are the numbers the evaluation publishes, and they are recorded independently of the samples.
+     evidence: results.scores[].metrics.exact_match.accuracy
+2. 1 sample(s) errored in the new run that did not error in the old one (q4::1: ToolError: bash sandbox exited with code 137 (out of memory)). An error suppresses a score, so their contribution to any aggregate metric changed regardless of model behaviour.
+     evidence: samples[].error
+3. Sample outcomes changed but no recorded configuration field that bears on them changed. The source of this difference is not present in these logs. Candidates these logs would not capture: model-provider nondeterminism, a silently updated model served behind a stable name, and environment differences the log does not record.
+     evidence: eval, samples[].scores
+
+inspect-replay compares recorded artifacts. It does not re-run the evaluation and cannot show that a configuration change produced an outcome change. See docs/assurance-boundary.md.

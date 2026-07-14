@@ -1,0 +1,776 @@
+{
+  "alignment": {
+    "is_weak": false,
+    "method": "SAMPLE_ID",
+    "note": "aligned on recorded sample id and epoch"
+  },
+  "config": [
+    {
+      "evidence": [
+        "eval.task"
+      ],
+      "field": "task.name",
+      "new": "qa_benchmark",
+      "old": "qa_benchmark",
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.task_version"
+      ],
+      "field": "task.version",
+      "new": 1,
+      "old": 1,
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.task_file"
+      ],
+      "field": "task.file",
+      "new": "tasks/qa_benchmark.py",
+      "old": "tasks/qa_benchmark.py",
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.task_args"
+      ],
+      "field": "task.args",
+      "new": {},
+      "old": {},
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.model"
+      ],
+      "field": "model.name",
+      "new": "mockllm/model",
+      "old": "mockllm/model",
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.model_base_url"
+      ],
+      "field": "model.base_url",
+      "new": null,
+      "note": "not recorded in either log",
+      "old": null,
+      "status": "UNKNOWN"
+    },
+    {
+      "evidence": [
+        "eval.model_args"
+      ],
+      "field": "model.args",
+      "new": {},
+      "old": {},
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.model_roles"
+      ],
+      "field": "model.roles",
+      "new": null,
+      "note": "not recorded in either log",
+      "old": null,
+      "status": "UNKNOWN"
+    },
+    {
+      "evidence": [
+        "eval.model_generate_config.max_tokens"
+      ],
+      "field": "generate_config.max_tokens",
+      "new": 512,
+      "old": 512,
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.model_generate_config.system_message"
+      ],
+      "field": "generate_config.system_message",
+      "new": "You are a helpful assistant. Answer with the answer only.",
+      "old": "You are a helpful assistant. Answer with the answer only.",
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.model_generate_config.temperature"
+      ],
+      "field": "generate_config.temperature",
+      "new": 0.0,
+      "old": 0.0,
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.model_generate_config.system_message",
+        "plan.steps[].params"
+      ],
+      "field": "prompt",
+      "new": [
+        {
+          "source": "generate_config.system_message",
+          "text": "You are a helpful assistant. Answer with the answer only."
+        },
+        {
+          "source": "plan.steps[0].system_message.template",
+          "text": "You are a helpful assistant. Answer with the answer only."
+        }
+      ],
+      "note": "collected from the generation config and from every plan step that records prompt text, each tagged with the solver that recorded it. Inspect has no single canonical prompt field, so UNKNOWN means no prompt text was recorded at the configuration level, not that none was used.",
+      "old": [
+        {
+          "source": "generate_config.system_message",
+          "text": "You are a helpful assistant. Answer with the answer only."
+        },
+        {
+          "source": "plan.steps[0].system_message.template",
+          "text": "You are a helpful assistant. Answer with the answer only."
+        }
+      ],
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.dataset.name"
+      ],
+      "field": "dataset.name",
+      "new": "arithmetic_and_facts",
+      "old": "arithmetic_and_facts",
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.dataset.location"
+      ],
+      "field": "dataset.location",
+      "new": "datasets/arithmetic_and_facts.jsonl",
+      "old": "datasets/arithmetic_and_facts.jsonl",
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.dataset.samples"
+      ],
+      "field": "dataset.samples",
+      "new": 8,
+      "old": 8,
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.dataset.shuffled"
+      ],
+      "field": "dataset.shuffled",
+      "new": false,
+      "old": false,
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.dataset.sample_ids"
+      ],
+      "field": "dataset.sample_ids",
+      "new": [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6",
+        "q7",
+        "q8"
+      ],
+      "old": [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6",
+        "q7",
+        "q8"
+      ],
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.scorers[].name",
+        "eval.scorers[].options"
+      ],
+      "field": "scorer",
+      "new": [
+        {
+          "name": "exact_match",
+          "options": {}
+        }
+      ],
+      "old": [
+        {
+          "name": "exact_match",
+          "options": {}
+        }
+      ],
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.solver"
+      ],
+      "field": "solver.name",
+      "new": "generate",
+      "old": "generate",
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.solver_args"
+      ],
+      "field": "solver.args",
+      "new": {},
+      "old": {},
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "plan.steps"
+      ],
+      "field": "solver.steps",
+      "new": [
+        {
+          "params": {
+            "template": "You are a helpful assistant. Answer with the answer only."
+          },
+          "solver": "system_message"
+        },
+        {
+          "params": {},
+          "solver": "generate"
+        }
+      ],
+      "old": [
+        {
+          "params": {
+            "template": "You are a helpful assistant. Answer with the answer only."
+          },
+          "solver": "system_message"
+        },
+        {
+          "params": {},
+          "solver": "generate"
+        }
+      ],
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "plan.name"
+      ],
+      "field": "plan.name",
+      "new": "qa_plan",
+      "old": "qa_plan",
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.sandbox"
+      ],
+      "field": "sandbox",
+      "new": null,
+      "note": "not recorded in either log",
+      "old": null,
+      "status": "UNKNOWN"
+    },
+    {
+      "evidence": [
+        "plan.steps[].params.tools"
+      ],
+      "field": "tools",
+      "new": null,
+      "note": "read from plan steps that record a tool set, as use_tools() does. Inspect has no tools field on the eval spec, so a solver that configures tools without recording them in its plan params is not visible here: UNKNOWN means no plan step recorded tools, not that no tools were used.",
+      "old": null,
+      "status": "UNKNOWN"
+    },
+    {
+      "evidence": [
+        "eval.config.epochs"
+      ],
+      "field": "config.epochs",
+      "new": 1,
+      "old": 1,
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.config.limit"
+      ],
+      "field": "config.limit",
+      "new": 8,
+      "old": 8,
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.revision.commit"
+      ],
+      "field": "revision.commit",
+      "new": "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678",
+      "old": "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678",
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "eval.revision.dirty"
+      ],
+      "field": "revision.dirty",
+      "new": null,
+      "note": "a dirty working tree means the recorded commit does not fully describe the code that ran",
+      "old": null,
+      "status": "UNKNOWN"
+    },
+    {
+      "evidence": [
+        "eval.packages.inspect_ai"
+      ],
+      "field": "packages.inspect_ai",
+      "new": "0.3.246",
+      "old": "0.3.246",
+      "status": "SAME"
+    }
+  ],
+  "config_changed": [],
+  "logs": {
+    "new": {
+      "location": "examples/sample-regression.eval",
+      "status": "success"
+    },
+    "old": {
+      "location": "examples/baseline.eval",
+      "status": "success"
+    }
+  },
+  "observations": [
+    {
+      "evidence": [
+        "results.scores[].metrics.exact_match.accuracy"
+      ],
+      "rank": 1,
+      "relationship": "co-occurrence",
+      "statement": "The evaluation's own reported metrics changed (exact_match.accuracy: 0.75 to 0.5). These are the numbers the evaluation publishes, and they are recorded independently of the samples."
+    },
+    {
+      "evidence": [
+        "samples[].error"
+      ],
+      "rank": 2,
+      "relationship": "co-occurrence",
+      "statement": "1 sample(s) errored in the new run that did not error in the old one (q4::1: ToolError: bash sandbox exited with code 137 (out of memory)). An error suppresses a score, so their contribution to any aggregate metric changed regardless of model behaviour."
+    },
+    {
+      "evidence": [
+        "eval",
+        "samples[].scores"
+      ],
+      "rank": 3,
+      "relationship": "co-occurrence",
+      "statement": "Sample outcomes changed but no recorded configuration field that bears on them changed. The source of this difference is not present in these logs. Candidates these logs would not capture: model-provider nondeterminism, a silently updated model served behind a stable name, and environment differences the log does not record."
+    }
+  ],
+  "results": [
+    {
+      "evidence": [
+        "results.scores[].metrics.exact_match.accuracy"
+      ],
+      "field": "results.exact_match.accuracy",
+      "new": 0.5,
+      "old": 0.75,
+      "status": "CHANGED"
+    },
+    {
+      "evidence": [
+        "results.total_samples"
+      ],
+      "field": "results.total_samples",
+      "new": 8,
+      "old": 8,
+      "status": "SAME"
+    },
+    {
+      "evidence": [
+        "results.completed_samples"
+      ],
+      "field": "results.completed_samples",
+      "new": 7,
+      "old": 8,
+      "status": "CHANGED"
+    }
+  ],
+  "results_changed": [
+    {
+      "evidence": [
+        "results.scores[].metrics.exact_match.accuracy"
+      ],
+      "field": "results.exact_match.accuracy",
+      "new": 0.5,
+      "old": 0.75,
+      "status": "CHANGED"
+    },
+    {
+      "evidence": [
+        "results.completed_samples"
+      ],
+      "field": "results.completed_samples",
+      "new": 7,
+      "old": 8,
+      "status": "CHANGED"
+    }
+  ],
+  "sample_comparison_performed": true,
+  "samples": [
+    {
+      "alignment": "SAMPLE_ID",
+      "alignment_is_weak": false,
+      "completion_changed": "CHANGED",
+      "epoch": 1,
+      "error": {
+        "new": null,
+        "old": null
+      },
+      "input_changed": false,
+      "key": "q1::1",
+      "metadata_changed": "UNKNOWN",
+      "outcome": "NEWLY_FAILING",
+      "reduced": false,
+      "sample_id": "q1",
+      "scores": [
+        {
+          "changed": true,
+          "comparable": true,
+          "new": {
+            "numeric": 0.0,
+            "pass_fail": "FAIL",
+            "present": true,
+            "value": "I"
+          },
+          "old": {
+            "numeric": 1.0,
+            "pass_fail": "PASS",
+            "present": true,
+            "value": "C"
+          },
+          "scorer": "exact_match"
+        }
+      ],
+      "tool_calls": {
+        "new": null,
+        "old": null
+      }
+    },
+    {
+      "alignment": "SAMPLE_ID",
+      "alignment_is_weak": false,
+      "completion_changed": "CHANGED",
+      "epoch": 1,
+      "error": {
+        "new": null,
+        "old": null
+      },
+      "input_changed": false,
+      "key": "q2::1",
+      "metadata_changed": "UNKNOWN",
+      "outcome": "NEWLY_FAILING",
+      "reduced": false,
+      "sample_id": "q2",
+      "scores": [
+        {
+          "changed": true,
+          "comparable": true,
+          "new": {
+            "numeric": 0.0,
+            "pass_fail": "FAIL",
+            "present": true,
+            "value": "I"
+          },
+          "old": {
+            "numeric": 1.0,
+            "pass_fail": "PASS",
+            "present": true,
+            "value": "C"
+          },
+          "scorer": "exact_match"
+        }
+      ],
+      "tool_calls": {
+        "new": null,
+        "old": null
+      }
+    },
+    {
+      "alignment": "SAMPLE_ID",
+      "alignment_is_weak": false,
+      "completion_changed": "SAME",
+      "epoch": 1,
+      "error": {
+        "new": null,
+        "old": null
+      },
+      "input_changed": false,
+      "key": "q3::1",
+      "metadata_changed": "UNKNOWN",
+      "outcome": "UNCHANGED",
+      "reduced": false,
+      "sample_id": "q3",
+      "scores": [
+        {
+          "changed": false,
+          "comparable": true,
+          "new": {
+            "numeric": 1.0,
+            "pass_fail": "PASS",
+            "present": true,
+            "value": "C"
+          },
+          "old": {
+            "numeric": 1.0,
+            "pass_fail": "PASS",
+            "present": true,
+            "value": "C"
+          },
+          "scorer": "exact_match"
+        }
+      ],
+      "tool_calls": {
+        "new": null,
+        "old": null
+      }
+    },
+    {
+      "alignment": "SAMPLE_ID",
+      "alignment_is_weak": false,
+      "completion_changed": "CHANGED",
+      "epoch": 1,
+      "error": {
+        "new": "ToolError: bash sandbox exited with code 137 (out of memory)",
+        "old": null
+      },
+      "input_changed": false,
+      "key": "q4::1",
+      "metadata_changed": "UNKNOWN",
+      "outcome": "ERROR_INTRODUCED",
+      "reduced": false,
+      "sample_id": "q4",
+      "scores": [
+        {
+          "changed": false,
+          "comparable": false,
+          "new": {
+            "numeric": null,
+            "pass_fail": "UNKNOWN",
+            "present": false,
+            "value": null
+          },
+          "old": {
+            "numeric": 1.0,
+            "pass_fail": "PASS",
+            "present": true,
+            "value": "C"
+          },
+          "scorer": "exact_match"
+        }
+      ],
+      "tool_calls": {
+        "new": null,
+        "old": null
+      }
+    },
+    {
+      "alignment": "SAMPLE_ID",
+      "alignment_is_weak": false,
+      "completion_changed": "SAME",
+      "epoch": 1,
+      "error": {
+        "new": null,
+        "old": null
+      },
+      "input_changed": false,
+      "key": "q5::1",
+      "metadata_changed": "UNKNOWN",
+      "outcome": "UNCHANGED",
+      "reduced": false,
+      "sample_id": "q5",
+      "scores": [
+        {
+          "changed": false,
+          "comparable": true,
+          "new": {
+            "numeric": 1.0,
+            "pass_fail": "PASS",
+            "present": true,
+            "value": "C"
+          },
+          "old": {
+            "numeric": 1.0,
+            "pass_fail": "PASS",
+            "present": true,
+            "value": "C"
+          },
+          "scorer": "exact_match"
+        }
+      ],
+      "tool_calls": {
+        "new": null,
+        "old": null
+      }
+    },
+    {
+      "alignment": "SAMPLE_ID",
+      "alignment_is_weak": false,
+      "completion_changed": "SAME",
+      "epoch": 1,
+      "error": {
+        "new": null,
+        "old": null
+      },
+      "input_changed": false,
+      "key": "q6::1",
+      "metadata_changed": "UNKNOWN",
+      "outcome": "UNCHANGED",
+      "reduced": false,
+      "sample_id": "q6",
+      "scores": [
+        {
+          "changed": false,
+          "comparable": true,
+          "new": {
+            "numeric": 1.0,
+            "pass_fail": "PASS",
+            "present": true,
+            "value": "C"
+          },
+          "old": {
+            "numeric": 1.0,
+            "pass_fail": "PASS",
+            "present": true,
+            "value": "C"
+          },
+          "scorer": "exact_match"
+        }
+      ],
+      "tool_calls": {
+        "new": null,
+        "old": null
+      }
+    },
+    {
+      "alignment": "SAMPLE_ID",
+      "alignment_is_weak": false,
+      "completion_changed": "CHANGED",
+      "epoch": 1,
+      "error": {
+        "new": null,
+        "old": null
+      },
+      "input_changed": false,
+      "key": "q7::1",
+      "metadata_changed": "UNKNOWN",
+      "outcome": "NEWLY_PASSING",
+      "reduced": false,
+      "sample_id": "q7",
+      "scores": [
+        {
+          "changed": true,
+          "comparable": true,
+          "new": {
+            "numeric": 1.0,
+            "pass_fail": "PASS",
+            "present": true,
+            "value": "C"
+          },
+          "old": {
+            "numeric": 0.0,
+            "pass_fail": "FAIL",
+            "present": true,
+            "value": "I"
+          },
+          "scorer": "exact_match"
+        }
+      ],
+      "tool_calls": {
+        "new": null,
+        "old": null
+      }
+    },
+    {
+      "alignment": "SAMPLE_ID",
+      "alignment_is_weak": false,
+      "completion_changed": "SAME",
+      "epoch": 1,
+      "error": {
+        "new": null,
+        "old": null
+      },
+      "input_changed": false,
+      "key": "q8::1",
+      "metadata_changed": "UNKNOWN",
+      "outcome": "UNCHANGED",
+      "reduced": false,
+      "sample_id": "q8",
+      "scores": [
+        {
+          "changed": false,
+          "comparable": true,
+          "new": {
+            "numeric": 0.0,
+            "pass_fail": "FAIL",
+            "present": true,
+            "value": "I"
+          },
+          "old": {
+            "numeric": 0.0,
+            "pass_fail": "FAIL",
+            "present": true,
+            "value": "I"
+          },
+          "scorer": "exact_match"
+        }
+      ],
+      "tool_calls": {
+        "new": null,
+        "old": null
+      }
+    }
+  ],
+  "schema_version": "1.0",
+  "summary": {
+    "added": 0,
+    "aligned": 8,
+    "error_introduced": 1,
+    "error_resolved": 0,
+    "errored_in_both": 0,
+    "input_changed": 0,
+    "mixed": 0,
+    "new_distinct_samples": 8,
+    "new_total_samples": 8,
+    "newly_failing": 2,
+    "newly_passing": 1,
+    "old_distinct_samples": 8,
+    "old_total_samples": 8,
+    "removed": 0,
+    "score_changed": 0,
+    "scored_denominator": 7,
+    "scores_not_comparable": 0,
+    "unalignable_new": 0,
+    "unalignable_old": 0,
+    "unchanged": 4,
+    "unit": "sample",
+    "unknown": 0
+  },
+  "tool": "inspect-replay",
+  "verdict": "CHANGED",
+  "warnings": []
+}
