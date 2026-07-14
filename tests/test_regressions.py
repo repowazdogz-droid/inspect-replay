@@ -12,7 +12,6 @@ import copy
 
 from conftest import make_chat_sample, make_log, make_reduced_log, make_sample, make_tool_log
 from inspect_replay import compare_logs, input_fingerprint, render
-from inspect_replay.cli import EXIT_ERROR
 from inspect_replay.models import SampleOutcome, Status, Verdict
 
 # --------------------------------------------------------------------------
@@ -82,21 +81,25 @@ def test_unalignable_samples_are_accounted_for_not_dropped(base_samples: list) -
     assert s.added == 0 and s.removed == 0, "unalignable is not the same as added or removed"
 
 
-def test_not_comparable_exits_with_an_error_code(tmp_path, base_samples: list) -> None:
+def test_not_comparable_exits_with_a_distinct_error_code(tmp_path, base_samples: list) -> None:
     """The CI contract: never return 'no differences' for a comparison that did
-    not happen."""
+    not happen -- and use a code distinct from a read error, so a gate can tell
+    'your file is broken' (2) from 'your runs don't line up' (3)."""
     from inspect_ai.log import write_eval_log
 
-    from inspect_replay.cli import main
+    from inspect_replay.cli import EXIT_NOT_COMPARABLE, EXIT_READ_ERROR, main
 
     old_path = tmp_path / "old.eval"
     new_path = tmp_path / "new.eval"
     write_eval_log(make_log(base_samples), str(old_path))
     write_eval_log(make_log([]), str(new_path))
 
-    assert main(["compare", str(old_path), str(new_path)]) == EXIT_ERROR
+    assert main(["compare", str(old_path), str(new_path)]) == EXIT_NOT_COMPARABLE
     # --exit-zero must not launder it into a pass either.
-    assert main(["compare", str(old_path), str(new_path), "--exit-zero"]) == EXIT_ERROR
+    assert main(["compare", str(old_path), str(new_path), "--exit-zero"]) == EXIT_NOT_COMPARABLE
+    # And it is distinct from the code for an unreadable log.
+    assert EXIT_NOT_COMPARABLE != EXIT_READ_ERROR
+    assert main(["compare", str(old_path), "/does/not/exist.eval"]) == EXIT_READ_ERROR
 
 
 def test_headline_metrics_are_compared_even_with_no_samples() -> None:

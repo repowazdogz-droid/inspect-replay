@@ -31,7 +31,11 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Typing :: Typed",
 ]
-dependencies = ["inspect_ai>=0.3.100"]
+# 0.3.180 is the oldest inspect_ai the full test suite is verified green against,
+# and CI installs exactly this floor. Older releases are unsupported; at or below
+# 0.3.170 the reader raises "compression method is not supported" on the example
+# logs (0.3.171-0.3.179 are untested, hence not the floor).
+dependencies = ["inspect_ai>=0.3.180"]
 
 [project.optional-dependencies]
 dev = [

@@ -361,7 +361,7 @@
       ],
       "rank": 1,
       "relationship": "co-occurrence",
-      "statement": "The evaluation's own reported metrics changed (exact_match.accuracy: 0.75 to 0.5). These are the numbers the evaluation publishes, and they are recorded independently of the samples."
+      "statement": "1 of the evaluation's own reported metric(s) changed (shown above under Reported metrics). These are the numbers the evaluation publishes, and they are recorded independently of the samples."
     },
     {
       "evidence": [
@@ -369,7 +369,7 @@
       ],
       "rank": 2,
       "relationship": "co-occurrence",
-      "statement": "1 sample(s) errored in the new run that did not error in the old one (q4::1: ToolError: bash sandbox exited with code 137 (out of memory)). An error suppresses a score, so their contribution to any aggregate metric changed regardless of model behaviour."
+      "statement": "1 sample(s) errored in the new run that did not error in the old one (shown under Changed samples). An error suppresses a score, so their contribution to any aggregate metric changed regardless of model behaviour."
     },
     {
       "evidence": [
@@ -745,7 +745,7 @@
       }
     }
   ],
-  "schema_version": "1.0",
+  "schema_version": "0.1",
   "summary": {
     "added": 0,
     "aligned": 8,

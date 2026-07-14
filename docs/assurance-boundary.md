@@ -59,6 +59,12 @@ works exactly the same.
   may mean the same thing; two identical completions may mean different things
   in context. This tool compares recorded strings, not meanings.
 - **It does not infer causation from temporal association.** See below.
+- **It does not fully sandbox an untrusted `.eval` file.** It neutralises
+  terminal-control sequences in quoted log content before printing (so a crafted
+  log cannot forge a verdict on your screen), but it cannot bound the memory a
+  decompression-bomb log consumes during parsing, which happens upstream in
+  `inspect_ai`/`zipfile`. Run under a memory limit for untrusted files. See
+  [SECURITY.md](../SECURITY.md).
 
 ## Why the observations are worded the way they are
 
@@ -68,10 +74,16 @@ The report's ranked observations use, and are restricted to, phrasing like:
 - "possible contributor"
 - "cannot be determined from the recorded data"
 
-They never say "caused by". This is enforced by a test
-(`tests/test_honesty.py::test_no_causal_wording_in_any_generated_report`) that
-fails the build if causal vocabulary appears in any generated report, across
-every scenario the tool can produce.
+They do not assert causation. This is enforced by
+`tests/test_honesty.py`, which runs a causal-language detector
+(`tests/_causal.py`, matching causal verbs and constructions — `caused`,
+`led to`, `triggered`, `drove`, `resulted in`, `due to`, `responsible for`, and
+others) over the tool's authored prose, and fails the build if any of it reads
+as a causal claim. The test exercises a labelled scenario for each
+observation/note branch (input-changed, errored-in-both, mixed, disjoint
+scorers, positional, and the configuration cases), because a detector can only
+be tripped by a branch that actually runs — the coverage is only as good as the
+branches enumerated, so a new branch needs a new scenario.
 
 The reason is structural, not stylistic. To establish that a temperature change
 caused a regression you would need to re-run the evaluation with the temperature
@@ -80,6 +92,32 @@ cannot do that. It sees two snapshots. In those snapshots, the temperature is
 different and the score is different. That is co-occurrence. Two configuration
 fields often change together in a real commit, and the report cannot tell you
 which of them mattered — it can only tell you both moved.
+
+### What the causal-wording check does NOT cover
+
+The guarantee is scoped, and the scope is the honest part. State it plainly:
+
+- **It covers text the tool AUTHORS** — observation statements, field and sample
+  notes, warnings, the alignment note — not text it QUOTES from the log. An
+  error message, a score value, or a completion is reproduced verbatim, and a
+  crafted or unlucky log can contain the word "caused". The tool no longer
+  splices raw error strings into its own sentences (they are shown separately,
+  under "Changed samples"), so quoted causation cannot enter a claim the tool is
+  making — but it can still appear in the report as quoted data.
+- **It is a keyword-and-construction detector, not a meaning detector.** It
+  catches the common causal verbs and phrasings. It does not catch causation
+  expressed by pure implication or paraphrase ("the regression follows the
+  temperature move," a suggestive ranking, a juxtaposition). The ranked list is
+  ordered by how directly a field bears on the outcome, and a reader can still
+  over-read that ordering as cause. The detector reduces the risk of the tool
+  asserting causation; it does not prove the tool never implies it.
+- **It runs at build time over the tool's own scenarios and a fixed adversarial
+  set**, not over your specific logs. It is a guard against the maintainers
+  regressing the wording, not a runtime filter on every possible output.
+
+In short: the tool is built not to *assert* that one change caused another, and
+that is tested. It cannot promise a reader will never *infer* cause from
+co-occurrence, and it does not scrub causal words out of quoted log content.
 
 The ranking of observations reflects **how directly a changed field bears on the
 recorded outcome**, not any measured effect size. A scorer change is ranked
@@ -91,8 +129,9 @@ candidates for a human to investigate.
 
 If no sample could be aligned — because a log was written with
 `log_samples=False`, because a run was truncated, or because no stable key
-matched — the verdict is **`NOT_COMPARABLE`** and the exit code is **2**. It is
-never `UNCHANGED` and never exit 0.
+matched — the verdict is **`NOT_COMPARABLE`** and the exit code is **3**. It is
+never `UNCHANGED` and never exit 0. (Exit **2** is the distinct code for a log
+that could not be read at all.)
 
 This matters because the exit code is what a CI gate acts on. A tool that
 returns "no differences" for an evaluation whose samples it never read will pass

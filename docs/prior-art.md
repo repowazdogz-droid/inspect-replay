@@ -98,7 +98,7 @@ honest thing will be to say so here rather than to keep it alive.
 2. A **CLI** for two-log comparison, with exit codes that CI can act on.
 3. **Machine-readable JSON output** with a versioned schema.
 4. Explicit **`UNKNOWN` states** where the log records no evidence, and a
-   **`NOT_COMPARABLE` verdict** (exit code 2) when no sample could be aligned,
+   **`NOT_COMPARABLE` verdict** (exit code 3) when no sample could be aligned,
    rather than silently reporting "unchanged".
 
 Point 4 is the one that matters most and is the least glamorous. A comparison

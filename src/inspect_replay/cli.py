@@ -1,20 +1,23 @@
 """Command line interface.
 
-Exit codes are part of the contract, so that CI can act on the result:
+Exit codes are part of the contract, so that CI can act on the result. The two
+failure modes are kept distinct, because a gate wants to tell "your file is
+broken" apart from "your two runs don't line up":
 
 * ``0`` -- no differences found
 * ``1`` -- differences found
-* ``2`` -- the comparison could not be performed (bad path, malformed log, or
-  no sample could be aligned)
+* ``2`` -- a log could not be READ (path missing, not a directory, malformed,
+  wrong format)
+* ``3`` -- the logs were read but the comparison could NOT BE PERFORMED: no
+  sample aligned, so nothing can be said about outcomes. Returning 0 here would
+  pass a CI gate on a run nobody looked at.
 
-Exit 2 covers the case where the tool could not answer the question, not only
-the case where it could not read the file. A comparison that aligned no samples
-has established nothing about the evaluation, and returning 0 there would pass a
-CI gate on a run nobody looked at.
+A caller that treats any nonzero code as failure still works; a caller that
+wants to distinguish the two failure modes can, without parsing stdout.
 
-``--exit-zero`` forces ``0`` on a successful comparison, for pipelines that
-want the report without failing the build. It does NOT suppress exit 2: a
-comparison that could not be performed is an error, not a difference.
+``--exit-zero`` forces ``0`` on a successful comparison, for pipelines that want
+the report without failing the build. It does NOT suppress 2 or 3: a comparison
+that could not be read or performed is an error, not a difference.
 """
 
 from __future__ import annotations
@@ -34,8 +37,13 @@ __all__ = ["main"]
 
 EXIT_NO_DIFFERENCES = 0
 EXIT_DIFFERENCES = 1
-EXIT_ERROR = 2
-"""Also returned when no sample could be aligned: the tool could not answer."""
+EXIT_READ_ERROR = 2
+"""A log could not be read (bad path, malformed, wrong format)."""
+EXIT_NOT_COMPARABLE = 3
+"""The logs were read but no sample could be aligned; nothing can be concluded."""
+
+# Backwards-compatible alias: EXIT_ERROR was the read-error code in 0.1.0-dev.
+EXIT_ERROR = EXIT_READ_ERROR
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -46,8 +54,9 @@ def _parser() -> argparse.ArgumentParser:
             "configuration, samples, scores, and errors."
         ),
         epilog=(
-            "Exit codes: 0 no differences, 1 differences found, 2 comparison failed. "
-            "inspect-replay is read-only and never re-runs an evaluation."
+            "Exit codes: 0 no differences, 1 differences found, 2 a log could not be read, "
+            "3 the logs were read but no sample could be aligned. inspect-replay is read-only "
+            "and never re-runs an evaluation."
         ),
     )
     parser.add_argument("--version", action="version", version=f"inspect-replay {__version__}")
@@ -92,7 +101,8 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help=(
             "always exit 0 when the comparison succeeds, even if differences were found. "
-            "Does not suppress exit 2: a comparison that could not be performed stays an error."
+            "Does not suppress exit 2 (unreadable log) or 3 (nothing aligned): those are "
+            "errors, not differences."
         ),
     )
     return parser
@@ -110,7 +120,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     except LoadError as exc:
         print(f"inspect-replay: error: {exc}", file=sys.stderr)
-        return EXIT_ERROR
+        return EXIT_READ_ERROR
 
     text = to_json(result) if args.json else render(result, verbose=args.verbose)
 
@@ -120,7 +130,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 handle.write(text + "\n")
         except OSError as exc:
             print(f"inspect-replay: error: could not write '{args.output}': {exc}", file=sys.stderr)
-            return EXIT_ERROR
+            return EXIT_READ_ERROR
     else:
         print(text)
 
@@ -130,7 +140,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"({result.alignment_note})",
             file=sys.stderr,
         )
-        return EXIT_ERROR
+        return EXIT_NOT_COMPARABLE
     if args.exit_zero:
         return EXIT_NO_DIFFERENCES
     return EXIT_DIFFERENCES if result.verdict is Verdict.CHANGED else EXIT_NO_DIFFERENCES

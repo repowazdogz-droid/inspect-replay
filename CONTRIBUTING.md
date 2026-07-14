@@ -42,14 +42,18 @@ tool that returns "no differences" for an evaluation whose samples it never read
 will pass the gate on a run that collapsed. Guarded by
 `test_not_comparable_exits_with_an_error_code`.
 
-**3. Never claim causation.**
+**3. Do not let the tool's authored prose assert causation.**
 
 inspect-replay reads two snapshots. It cannot hold a variable fixed and cannot
-re-run anything, so it cannot establish that any change produced any result.
-Report co-occurrence: "changed alongside", "possible contributor", "cannot be
-determined from the recorded data". Guarded by
-`test_no_causal_wording_in_any_generated_report`, which fails the build if
-causal vocabulary appears in any generated output.
+re-run anything, so it cannot establish that any change brought about any result.
+Its own sentences report co-occurrence: "changed alongside", "possible
+contributor", "cannot be determined from the recorded data". Guarded by the
+causal-language tests in `tests/test_honesty.py`, which run the detector in
+`tests/_causal.py` (causal verbs and constructions, not a substring list) over
+the tool's **authored** prose. The guarantee is scoped to text the tool writes,
+not text it quotes from a log, and it catches wording, not implication — see the
+limits section of `docs/assurance-boundary.md`. Do not widen the claim in the
+docs beyond what that detector actually checks.
 
 **4. Never align samples by position silently.**
 

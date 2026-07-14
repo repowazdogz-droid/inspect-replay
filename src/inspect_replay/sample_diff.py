@@ -205,13 +205,17 @@ def _classify(
     # and pretending otherwise manufactures differences.
     shared = [s for s in scores if s.comparable]
     if not shared:
-        old_names = sorted(s.scorer for s in scores if s.old_present)
-        new_names = sorted(s.scorer for s in scores if s.new_present)
+        # The scorer NAMES are untrusted log content. They are not spliced into
+        # this authored note (a scorer could be named to inject wording or a
+        # control character); the names are shown, sanitised, on the sample's
+        # own line in the report. Counts are safe.
+        n_old = sum(1 for s in scores if s.old_present)
+        n_new = sum(1 for s in scores if s.new_present)
         return (
             SampleOutcome.SCORES_NOT_COMPARABLE,
-            f"the two runs share no scorer (old: {', '.join(old_names) or 'none'}; "
-            f"new: {', '.join(new_names) or 'none'}), so there is no common quantity to "
-            "compare and no regression or recovery can be reported for this sample",
+            f"the two runs share no scorer ({n_old} in the old run, {n_new} in the new, none "
+            "in common; the scorer names are listed with this sample), so there is no common "
+            "quantity to compare and no regression or recovery can be reported for this sample",
         )
 
     verdicts = [v for v in (_verdict_for(s) for s in shared) if v is not None]

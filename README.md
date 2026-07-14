@@ -46,14 +46,14 @@ Changed samples:
       exact_match: I → C
 
 What changed alongside the result (ranked; co-occurrence, not causation):
-1. The evaluation's own reported metrics changed (exact_match.accuracy: 0.75 to 0.5). These are the numbers the evaluation publishes, and they are recorded independently of the samples.
+1. 1 of the evaluation's own reported metric(s) changed (shown above under Reported metrics). These are the numbers the evaluation publishes, and they are recorded independently of the samples.
      evidence: results.scores[].metrics.exact_match.accuracy
-2. 1 sample(s) errored in the new run that did not error in the old one (q4::1: ToolError: bash sandbox exited with code 137 (out of memory)). An error suppresses a score, so their contribution to any aggregate metric changed regardless of model behaviour.
+2. 1 sample(s) errored in the new run that did not error in the old one (shown under Changed samples). An error suppresses a score, so their contribution to any aggregate metric changed regardless of model behaviour.
      evidence: samples[].error
 3. Sample outcomes changed but no recorded configuration field that bears on them changed. The source of this difference is not present in these logs. Candidates these logs would not capture: model-provider nondeterminism, a silently updated model served behind a stable name, and environment differences the log does not record.
      evidence: eval, samples[].scores
 
-inspect-replay compares recorded artifacts. It does not re-run the evaluation and cannot show that a configuration change produced an outcome change. See docs/assurance-boundary.md.
+inspect-replay compares recorded artifacts. It does not re-run the evaluation; it reports what changed together, not why the result differs. See docs/assurance-boundary.md.
 ```
 
 The last observation is the point of the tool. Accuracy fell, three samples
@@ -93,9 +93,9 @@ inspect-replay compare old.eval new.eval --json -o diff.json
 inspect-replay compare old.eval new.eval --verbose
 ```
 
-Exit codes: **0** no differences · **1** differences found · **2** the comparison
-could not be performed (bad path, malformed log, or no sample could be aligned).
-So a regression gate is one line:
+Exit codes: **0** no differences · **1** differences found · **2** a log could not
+be read · **3** the logs were read but no sample could be aligned. So a regression
+gate is one line:
 
 ```yaml
 - run: inspect-replay compare baseline.eval candidate.eval
@@ -112,7 +112,7 @@ result = compare("baseline.eval", "candidate.eval")
 print(result.verdict)                      # Verdict.CHANGED
 print(result.summary.newly_failing)        # 2
 print(render(result))                      # the text report above
-payload = to_dict(result)                  # schema_version "1.0"
+payload = to_dict(result)                  # schema_version "0.1" (pre-1.0, not frozen)
 ```
 
 ## What it compares
@@ -142,12 +142,14 @@ kind of change this should surface.
 
 This is the part worth reading before you trust a report.
 
-**It never says "caused by."** It reads two snapshots. If the temperature
+**It does not assert causation.** It reads two snapshots. If the temperature
 changed and the score changed, it saw those two things co-occur — it did not run
 the evaluation with the temperature held fixed, so it cannot tell you which
-change mattered. Observations are worded as "changed alongside" and "possible
-contributor", and a test fails the build if causal wording ever appears in
-generated output.
+change mattered. Its authored prose is worded as "changed alongside" and
+"possible contributor", and a build-time causal-language detector fails the
+build if the tool's own sentences ever assert cause. The check covers text the
+tool authors, not error strings it quotes from the log, and it catches wording,
+not implication — see [docs/assurance-boundary.md](docs/assurance-boundary.md#what-the-causal-wording-check-does-not-cover).
 
 **A numeric score change is not a regression.** If a scorer emits 0.9 and then
 0.4, no threshold in the log says what passing means. That is reported as
@@ -181,7 +183,8 @@ falsehood you might act on.
 
 **It will not tell you nothing changed when it compared nothing.** If no sample
 could be aligned — a log written with `log_samples=False`, a truncated run — the
-verdict is `NOT_COMPARABLE` and the exit code is 2, never 0. A tool that returns
+verdict is `NOT_COMPARABLE` and the exit code is 3 (distinct from 2, an
+unreadable log), never 0. A tool that returns
 "unchanged" for an evaluation it never looked at will pass a CI gate on a run
 that collapsed. Headline metrics from `results` are still compared, because they
 live in the header and survive `log_samples=False`.

@@ -22,6 +22,7 @@ from .models import (
     Status,
     Verdict,
 )
+from .text import sanitize
 
 __all__ = ["render"]
 
@@ -58,7 +59,10 @@ _NOTEWORTHY = (
 def _fmt(value: object, limit: int = 60) -> str:
     if value is None:
         return "<not recorded>"
-    text = " ".join(str(value).split())
+    # sanitize before measuring/truncating: values come from the untrusted log
+    # and may contain terminal control sequences. " ".split() drops the
+    # whitespace controls; sanitize() neutralises the rest (ANSI/OSC escapes).
+    text = sanitize(" ".join(str(value).split()))
     return text if len(text) <= limit else text[: limit - 1] + "…"
 
 
@@ -100,41 +104,60 @@ def _divergences(old: Any, new: Any, path: str = "") -> list[tuple[str, Any, Any
     return [(path, old, new)]
 
 
+def _label(token: str) -> str:
+    """A field name, dotted path, sample key, or scorer name for display.
+
+    These read like structural identifiers, but they embed untrusted substrings
+    -- a package name, a tool name, a scorer name, a sample id -- so they are
+    sanitised for control characters exactly like values are.
+    """
+    return sanitize(token)
+
+
 def _field_lines(d: FieldDiff) -> list[str]:
     """Render one changed configuration field."""
+    field = _label(d.field)
     if d.status is Status.ADDED:
-        return [f"- {d.field}: <not recorded in old> → {_fmt(d.new)}"]
+        return [f"- {field}: <not recorded in old> → {_fmt(d.new)}"]
     if d.status is Status.REMOVED:
-        return [f"- {d.field}: {_fmt(d.old)} → <not recorded in new>"]
+        return [f"- {field}: {_fmt(d.old)} → <not recorded in new>"]
 
     if isinstance(d.old, (dict, list)) or isinstance(d.new, (dict, list)):
         parts = _divergences(d.old, d.new)
         if len(parts) <= 6 and all(p for p, _, _ in parts):
-            lines = [f"- {d.field}: changed in {len(parts)} place(s)"]
+            lines = [f"- {field}: changed in {len(parts)} place(s)"]
             for path, o, n in parts:
                 if path.endswith(" +added"):
-                    lines.append(f"    {path.removesuffix(' +added')}: added {_fmt(n, 70)}")
+                    lines.append(f"    {_label(path.removesuffix(' +added'))}: added {_fmt(n, 70)}")
                 elif path.endswith(" -removed"):
-                    lines.append(f"    {path.removesuffix(' -removed')}: removed {_fmt(o, 70)}")
+                    lines.append(
+                        f"    {_label(path.removesuffix(' -removed'))}: removed {_fmt(o, 70)}"
+                    )
                 else:
-                    lines.append(f"    {path}: {_fmt(o, 70)} → {_fmt(n, 70)}")
+                    lines.append(f"    {_label(path)}: {_fmt(o, 70)} → {_fmt(n, 70)}")
             return lines
-    return [f"- {d.field}: {_fmt(d.old)} → {_fmt(d.new)}"]
+    return [f"- {field}: {_fmt(d.old)} → {_fmt(d.new)}"]
 
 
 def _sample_line(d: SampleDiff) -> str:
-    bits = [f"  {d.key}: {_OUTCOME_LABEL[d.outcome]}"]
+    bits = [f"  {_label(d.key)}: {_OUTCOME_LABEL[d.outcome]}"]
 
     if d.outcome is SampleOutcome.SCORES_NOT_COMPARABLE:
-        old = ", ".join(f"{s.scorer}={_fmt(s.old_value, 20)}" for s in d.scores if s.old_present)
-        new = ", ".join(f"{s.scorer}={_fmt(s.new_value, 20)}" for s in d.scores if s.new_present)
+        old = ", ".join(
+            f"{_label(s.scorer)}={_fmt(s.old_value, 20)}" for s in d.scores if s.old_present
+        )
+        new = ", ".join(
+            f"{_label(s.scorer)}={_fmt(s.new_value, 20)}" for s in d.scores if s.new_present
+        )
         bits.append(f"      old: {old or '<none>'}")
         bits.append(f"      new: {new or '<none>'}")
         return "\n".join(bits)
 
     for s in d.scores:
         if s.changed:
-            bits.append(f"      {s.scorer}: {_fmt(s.old_value, 30)} → {_fmt(s.new_value, 30)}")
+            bits.append(
+                f"      {_label(s.scorer)}: {_fmt(s.old_value, 30)} → {_fmt(s.new_value, 30)}"
+            )
 
     if d.outcome is SampleOutcome.ERROR_INTRODUCED and d.new_error:
         bits.append(f"      error: {_fmt(d.new_error, 90)}")
@@ -164,8 +187,10 @@ def render(comparison: Comparison, *, verbose: bool = False) -> str:
     unit = s.unit
 
     lines.append(f"Evaluation: {comparison.verdict.value}")
-    lines.append(f"  old: {comparison.old_location}")
-    lines.append(f"  new: {comparison.new_location}")
+    # Locations usually come from the invoking argument, but a log can carry its
+    # own 'location' field, so treat them as untrusted too.
+    lines.append(f"  old: {sanitize(comparison.old_location)}")
+    lines.append(f"  new: {sanitize(comparison.new_location)}")
     if comparison.verdict is Verdict.NOT_COMPARABLE:
         lines.append("  the sample comparison could not be performed; see Samples below")
     lines.append("")
@@ -192,7 +217,7 @@ def render(comparison: Comparison, *, verbose: bool = False) -> str:
         for d in changes:
             lines.extend(_field_lines(d))
             if d.note:
-                lines.append(f"    note: {d.note}")
+                lines.append(f"    note: {sanitize(d.note)}")
     else:
         lines.append("- no recorded configuration field changed")
 
@@ -203,7 +228,7 @@ def render(comparison: Comparison, *, verbose: bool = False) -> str:
         lines.append(
             f"- {len(unknown)} field(s): UNKNOWN, not recorded in at least one log "
             "(not the same as unchanged): "
-            + ", ".join(d.field for d in unknown[:6])
+            + ", ".join(_label(d.field) for d in unknown[:6])
             + ("…" if len(unknown) > 6 else "")
         )
     lines.append("")
@@ -212,14 +237,14 @@ def render(comparison: Comparison, *, verbose: bool = False) -> str:
     lines.append(f"Samples (unit: {unit}):")
     lines.append(f"- {s.old_total} in old log, {s.new_total} in new log")
     if not comparison.sample_comparison_performed:
-        lines.append(f"- 0 aligned: {comparison.alignment_note}")
+        lines.append(f"- 0 aligned: {sanitize(comparison.alignment_note)}")
         lines.append(
             f"- {s.unalignable_old + s.unalignable_new} could not be aligned "
             f"({s.unalignable_old} from old, {s.unalignable_new} from new)"
         )
         lines.append("- NO sample-level conclusion can be drawn from these logs")
     else:
-        lines.append(f"- {s.aligned} aligned ({comparison.alignment_note})")
+        lines.append(f"- {s.aligned} aligned ({sanitize(comparison.alignment_note)})")
         lines.append(f"- {s.unchanged} unchanged")
         for label, count in (
             ("newly failing", s.newly_failing),
@@ -256,18 +281,21 @@ def render(comparison: Comparison, *, verbose: bool = False) -> str:
     if comparison.observations:
         lines.append("What changed alongside the result (ranked; co-occurrence, not causation):")
         for o in comparison.observations:
-            lines.append(f"{o.rank}. {o.statement}")
-            lines.append(f"     evidence: {', '.join(o.evidence)}")
+            # Statements are authored by the tool and no longer splice untrusted
+            # values, but sanitise at the boundary anyway -- defence in depth.
+            lines.append(f"{o.rank}. {sanitize(o.statement)}")
+            lines.append(f"     evidence: {sanitize(', '.join(o.evidence))}")
         lines.append("")
 
     if comparison.warnings:
         lines.append("Warnings:")
-        lines.extend(f"- {w}" for w in comparison.warnings)
+        # Warnings are authored, but one embeds the log status; sanitise anyway.
+        lines.extend(f"- {sanitize(w)}" for w in comparison.warnings)
         lines.append("")
 
     lines.append(
-        "inspect-replay compares recorded artifacts. It does not re-run the evaluation and "
-        "cannot show that a configuration change produced an outcome change. See "
+        "inspect-replay compares recorded artifacts. It does not re-run the evaluation; it "
+        "reports what changed together, not why the result differs. See "
         "docs/assurance-boundary.md."
     )
     return "\n".join(lines)

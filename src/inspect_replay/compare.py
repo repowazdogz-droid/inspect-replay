@@ -215,14 +215,15 @@ def _observations(
     metric_changes = [d for d in results if d.differs and d.field.startswith("results.")]
     headline = [d for d in metric_changes if not d.field.endswith(("_samples",))]
     if headline:
-        detail = "; ".join(
-            f"{d.field.removeprefix('results.')}: {d.old} to {d.new}" for d in headline
-        )
+        # The metric names embed the (untrusted) scorer name, and the values are
+        # untrusted, so neither is spliced into this authored sentence. Both are
+        # shown, sanitised, in the Reported metrics section above.
+        n = len(headline)
         statements.append(
             (
-                f"The evaluation's own reported metrics changed ({detail}). These are the "
-                "numbers the evaluation publishes, and they are recorded independently of "
-                "the samples.",
+                f"{n} of the evaluation's own reported metric(s) changed (shown above under "
+                "Reported metrics). These are the numbers the evaluation publishes, and they "
+                "are recorded independently of the samples.",
                 tuple(e for d in headline for e in d.evidence),
             )
         )
@@ -240,12 +241,15 @@ def _observations(
 
     model = _find(config, "model.name")
     if model is not None and model.differs:
+        # Model names are untrusted log content (an attacker can name a model to
+        # inject wording), so they are not spliced here. The old and new names
+        # are shown, sanitised, on the model.name line under Configuration.
         statements.append(
             (
-                f"The model changed ({model.old} to {model.new}), alongside the outcomes "
-                "below. Model output is generated remotely and is not reproducible from this "
-                "log, so the size of its contribution cannot be determined from the recorded "
-                "data.",
+                "The model changed (old and new names shown above under Configuration), "
+                "alongside the outcomes below. Model output is generated remotely and is not "
+                "reproducible from this log, so the size of its contribution cannot be "
+                "determined from the recorded data.",
                 model.evidence,
             )
         )
@@ -284,11 +288,15 @@ def _observations(
 
     gen = generation_fields_changed(config)
     if gen:
-        detail = ", ".join(f"{d.field.split('.', 1)[1]}: {d.old} to {d.new}" for d in gen)
+        # The parameter NAMES are a fixed, known set (temperature, top_p, ...),
+        # so they are safe to list; the VALUES are untrusted and are shown,
+        # sanitised, under Configuration rather than spliced in here.
+        names = ", ".join(d.field.split(".", 1)[1] for d in gen)
         statements.append(
             (
-                f"Generation parameters changed ({detail}). These affect sampling from the "
-                "model and are a possible contributor to any output or score change below.",
+                f"Generation parameters changed ({names}; values shown above under "
+                "Configuration). These affect sampling from the model and are a possible "
+                "contributor to any output or score change below.",
                 tuple(e for d in gen for e in d.evidence),
             )
         )
@@ -305,13 +313,17 @@ def _observations(
 
     # --- observed sample-level facts ---
     if summary.error_introduced:
-        errs = [d for d in samples if d.new_error and not d.old_error][:3]
-        detail = "; ".join(f"{d.key}: {(d.new_error or '')[:80]}" for d in errs)
+        # Neither the error MESSAGES nor the sample KEYS are spliced in: both are
+        # untrusted log content, and putting them into a sentence the tool is
+        # asserting would risk terminal-control injection and let a crafted log
+        # inject wording. The affected samples and their messages are shown,
+        # sanitised, under Changed samples.
         statements.append(
             (
                 f"{summary.error_introduced} {summary.unit}(s) errored in the new run that did "
-                f"not error in the old one ({detail}). An error suppresses a score, so their "
-                "contribution to any aggregate metric changed regardless of model behaviour.",
+                "not error in the old one (shown under Changed samples). An error suppresses a "
+                "score, so their contribution to any aggregate metric changed regardless of "
+                "model behaviour.",
                 ("samples[].error",),
             )
         )
@@ -329,9 +341,14 @@ def _observations(
     if summary.input_changed:
         statements.append(
             (
+                # Wording avoids "because" -- not for meaning (this explains the
+                # tool's own methodology, not an eval outcome) but because the
+                # causal-language guard errs toward flagging, and the guarantee
+                # is defined by that guard. Keep authored prose clear of its
+                # trigger words.
                 f"{summary.input_changed} {summary.unit}(s) kept their id but changed their "
-                "recorded input. Their scores are NOT compared, because they are no longer "
-                "the same question.",
+                "recorded input, so they are no longer the same question. Their scores are "
+                "NOT compared.",
                 ("samples[].id", "samples[].input"),
             )
         )

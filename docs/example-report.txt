@@ -31,11 +31,11 @@ Changed samples:
       exact_match: I → C
 
 What changed alongside the result (ranked; co-occurrence, not causation):
-1. The evaluation's own reported metrics changed (exact_match.accuracy: 0.75 to 0.5). These are the numbers the evaluation publishes, and they are recorded independently of the samples.
+1. 1 of the evaluation's own reported metric(s) changed (shown above under Reported metrics). These are the numbers the evaluation publishes, and they are recorded independently of the samples.
      evidence: results.scores[].metrics.exact_match.accuracy
-2. 1 sample(s) errored in the new run that did not error in the old one (q4::1: ToolError: bash sandbox exited with code 137 (out of memory)). An error suppresses a score, so their contribution to any aggregate metric changed regardless of model behaviour.
+2. 1 sample(s) errored in the new run that did not error in the old one (shown under Changed samples). An error suppresses a score, so their contribution to any aggregate metric changed regardless of model behaviour.
      evidence: samples[].error
 3. Sample outcomes changed but no recorded configuration field that bears on them changed. The source of this difference is not present in these logs. Candidates these logs would not capture: model-provider nondeterminism, a silently updated model served behind a stable name, and environment differences the log does not record.
      evidence: eval, samples[].scores
 
-inspect-replay compares recorded artifacts. It does not re-run the evaluation and cannot show that a configuration change produced an outcome change. See docs/assurance-boundary.md.
+inspect-replay compares recorded artifacts. It does not re-run the evaluation; it reports what changed together, not why the result differs. See docs/assurance-boundary.md.

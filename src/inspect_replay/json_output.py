@@ -1,8 +1,24 @@
 """Machine-readable output.
 
-The schema is versioned (``schema_version``) and is the tool's public contract
-for automation. Keys are sorted and values are plain JSON types, so the same
-pair of logs always serialises to byte-identical output.
+The schema is versioned (``schema_version``) and is ``0.x`` while the package is
+pre-1.0: not yet frozen. Keys are sorted and values are plain JSON types, so the
+same pair of logs always serialises to byte-identical output.
+
+Contract vs presentation
+-------------------------
+Not every field is a stable contract. Build automation on the machine fields;
+treat the prose fields as human-facing and liable to reword.
+
+* **Machine contract** (safe to depend on within a schema version): ``verdict``,
+  ``sample_comparison_performed``, every ``status`` / ``outcome`` / ``alignment``
+  enum value, the numeric ``summary`` counters, ``config[].field`` names, and
+  ``observations[].evidence`` / ``.rank`` / ``.relationship``.
+* **Presentation, may change without a version bump**: ``observations[].
+  statement`` and every ``note`` field are English prose for humans. Do not
+  parse them. ``sample[].key`` is an OPAQUE identifier -- it has two internal
+  shapes (``id::epoch`` for id alignment, ``sha256::epoch`` for hash alignment)
+  and must be treated as a string token, not decomposed; use the separate
+  ``sample_id`` and ``epoch`` fields instead.
 
 Unknown information is represented as the string ``"UNKNOWN"`` or
 ``"NOT_CHECKED"`` in a status field -- never as ``false``, never as ``null``
@@ -136,5 +152,14 @@ def to_dict(comparison: Comparison) -> dict[str, Any]:
 
 
 def to_json(comparison: Comparison, *, indent: int | None = 2) -> str:
-    """Serialise a comparison deterministically."""
-    return json.dumps(to_dict(comparison), indent=indent, sort_keys=True, ensure_ascii=False)
+    """Serialise a comparison deterministically.
+
+    ``ensure_ascii=True`` so that every non-ASCII byte is escaped as ``\\uXXXX``.
+    This is a security property, not just a portability one: with
+    ``ensure_ascii=False``, ``json.dumps`` escapes only the C0 range (through
+    ``\\u001f``, which includes ESC) but emits DEL (``0x7f``) and the C1 range
+    (``0x80``-``0x9f``, including the C1 CSI ``0x9b``) as raw bytes. Those are
+    terminal-active on some terminals, so a crafted log could otherwise inject
+    them via the JSON path. Escaping everything closes it.
+    """
+    return json.dumps(to_dict(comparison), indent=indent, sort_keys=True, ensure_ascii=True)

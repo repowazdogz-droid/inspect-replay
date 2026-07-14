@@ -14,7 +14,7 @@ Public API::
     result = compare("baseline.eval", "candidate.eval")
     print(result.verdict)          # Verdict.CHANGED
     print(render(result))          # human-readable report
-    payload = to_dict(result)      # machine-readable, schema_version "1.0"
+    payload = to_dict(result)      # machine-readable, schema_version "0.1" (pre-1.0)
 """
 
 from __future__ import annotations

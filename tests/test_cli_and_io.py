@@ -205,7 +205,7 @@ def test_json_denominators_are_always_present() -> None:
 
 def test_json_is_serialisable_and_sorted() -> None:
     text = to_json(compare(BASELINE, MODEL_CHANGE))
-    assert text == json.dumps(json.loads(text), indent=2, sort_keys=True, ensure_ascii=False)
+    assert text == json.dumps(json.loads(text), indent=2, sort_keys=True, ensure_ascii=True)
 
 
 # ---------------------------------------------------------------- examples

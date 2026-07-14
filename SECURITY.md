@@ -26,6 +26,11 @@ inspect-replay is a local, read-only, offline command line tool.
 - It executes no code from the logs and runs no sandbox.
 - Its only runtime dependency is `inspect_ai`.
 
+Two caveats to "safe on untrusted input", both detailed below: the text report
+must neutralise terminal-control sequences in quoted log content (it does), and
+parsing a decompression-bomb `.eval` can exhaust memory (it cannot yet bound
+this — run under a memory limit for untrusted files).
+
 ## What this means for your data
 
 Evaluation logs frequently contain prompts, model completions, and dataset
@@ -36,6 +41,41 @@ and error strings.
 
 If you paste a report into a public issue, read it first.
 
+## Terminal-control injection (mitigated)
+
+An `.eval` log is untrusted input, and the text report prints values taken from
+it -- error messages, score values, model names, and the log location. Those are
+attacker-controllable. Without mitigation, a crafted log could embed ANSI/OSC
+escape sequences that clear the screen, move the cursor, set the terminal title,
+or print a **forged green `Evaluation: UNCHANGED` line** -- especially damaging
+for a tool whose entire output is a trust verdict.
+
+inspect-replay **strips control characters from untrusted content before
+printing** to the text report — both values and the identifiers that carry
+untrusted substrings (error messages, score values, model names,
+dataset/scorer/package names, sample ids, the log location)
+(`inspect_replay.text.sanitize`). Regression tests feed raw `0x1b`/`0x07`, the
+C1 CSI `0x9b`, backspace, and carriage return through each of these fields and
+assert no control character reaches stdout. The JSON output is protected by `ensure_ascii=True`, which escapes every non-ASCII byte -- including DEL and the C1 range that `json.dumps` would otherwise emit raw -- to `\uXXXX`. A test feeds ESC, DEL, and the C1 CSI through the JSON path and asserts no raw control byte survives.
+
+The authored-prose parts of the report are additionally kept free of quoted log
+text (see the causal-language note in `docs/assurance-boundary.md`), so a log
+cannot inject wording into a sentence the tool is asserting.
+
+## Resource exhaustion when parsing untrusted logs
+
+An `.eval` is a zip archive, and zip archives can be **decompression bombs**. A
+small crafted file (~800 KB in testing) whose members expand to hundreds of
+megabytes drove the loader to multiple gigabytes of resident memory in a couple
+of seconds before failing validation; a larger one can OOM-kill the process.
+
+This blowup happens inside stdlib `zipfile`/`json` and `inspect_ai`'s reader,
+which decompress before inspect-replay sees the data, so inspect-replay cannot
+currently bound it. **If you compare `.eval` files from an untrusted source, run
+the tool under a memory limit** (e.g. `ulimit -v`, a container limit, or a cgroup)
+until an upstream size guard exists. A pre-parse size check is tracked as future
+work.
+
 ## Parsing untrusted logs
 
 Logs are parsed with `inspect_ai.log.read_eval_log`, so inspect-replay's parsing
@@ -43,4 +83,6 @@ exposure is Inspect's parsing exposure. A malformed or hostile file is surfaced
 as a `LoadError` rather than a stack trace, but the parsing itself happens
 upstream. If you are comparing `.eval` files from a source you do not trust,
 that trust decision is really about `inspect_ai` and the `zipfile`/`json`
-libraries beneath it, not about this tool.
+libraries beneath it, not about this tool -- with the two exceptions above
+(terminal injection, which this tool mitigates, and decompression bombs, which
+it cannot yet bound).

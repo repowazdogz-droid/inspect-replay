@@ -66,13 +66,14 @@ fact the data does not support.
 class Verdict(StrEnum):
     UNCHANGED = "UNCHANGED"
     CHANGED = "CHANGED"
-    NOT_COMPARABLE = "NOT_COMPARABLE"   # exit code 2
+    NOT_COMPARABLE = "NOT_COMPARABLE"   # exit code 3
 ```
 
 `NOT_COMPARABLE` exists because the exit code is what a CI gate acts on. If no
 sample could be aligned — `log_samples=False`, a truncated run, no matching key —
 then reporting `UNCHANGED` and exiting 0 passes the gate on an evaluation nobody
-looked at. An earlier version of this tool did exactly that. It is now exit 2,
+looked at. An earlier version of this tool did exactly that. It is now exit 3
+(distinct from exit 2, an unreadable log),
 and `--exit-zero` does not suppress it.
 
 The headline metrics in `EvalResults` are compared regardless of samples, because

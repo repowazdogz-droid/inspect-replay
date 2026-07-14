@@ -12,8 +12,15 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
 
-SCHEMA_VERSION = "1.0"
-"""Version of the JSON output schema. Bumped on any breaking change."""
+SCHEMA_VERSION = "0.1"
+"""Version of the JSON output schema.
+
+Deliberately ``0.x``: while the package is pre-1.0 the schema is not frozen and
+may change between minor versions. Consumers should pin a version and read the
+contract/presentation split documented in ``json_output.py`` -- in short, the
+machine contract is the enum-valued and numeric fields; ``observations[].
+statement`` and other prose fields are human-facing and may be reworded without
+a version bump. The version moves to ``1.0`` when the schema is frozen."""
 
 
 class Status(StrEnum):
