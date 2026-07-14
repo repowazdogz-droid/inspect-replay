@@ -90,7 +90,7 @@ is the intended behaviour — update it deliberately.
 
 ## Scope
 
-v0.1 is deliberately finished. Two logs in, one report out. Comparison of more
+Scope is deliberately fixed: two logs in, one report out. Comparison of more
 than two logs, statistical significance testing, re-running evaluations, model
 calls, and a web UI are all out of scope. If you want statistically-tested
 regression analysis of Inspect runs,

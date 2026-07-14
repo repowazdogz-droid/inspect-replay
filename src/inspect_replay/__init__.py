@@ -19,7 +19,7 @@ Public API::
 
 from __future__ import annotations
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from .align import Alignment, align_samples, input_fingerprint
 from .compare import compare, compare_logs

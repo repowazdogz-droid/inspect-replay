@@ -41,6 +41,7 @@ new.eval ─┘                              │
 | `compare.py` | Orchestration and the ranked observations. |
 | `report.py` | Text rendering. |
 | `json_output.py` | Versioned machine-readable rendering. |
+| `text.py` | Control-character sanitisation for untrusted strings printed to a terminal. |
 | `cli.py` | Argument parsing and exit codes. |
 
 ## The data model encodes ignorance

@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use inspect-replay in your work, please cite it as below."
+title: "inspect-replay: deterministic, sample-aligned comparison of Inspect AI evaluation logs"
+abstract: >-
+  A command-line tool that compares two Inspect AI .eval logs and reports what
+  changed in configuration, headline metrics, samples, scores, and errors. It is
+  deterministic, read-only, and deliberate about the difference between
+  "unchanged" and "we cannot tell": unrecorded fields are reported as UNKNOWN,
+  a comparison that could not be performed is NOT_COMPARABLE rather than a false
+  green, and the tool reports co-occurrence rather than asserting causation.
+type: software
+authors:
+  - family-names: Smith
+    given-names: Warren
+repository-code: "https://github.com/repowazdogz-droid/inspect-replay"
+url: "https://github.com/repowazdogz-droid/inspect-replay"
+license: MIT
+version: "0.2.0"
+date-released: "2026-07-14"
+keywords:
+  - inspect-ai
+  - ai-evaluation
+  - evaluation
+  - regression-testing
+  - reproducibility
+  - ai-safety

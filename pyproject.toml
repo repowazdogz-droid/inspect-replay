@@ -4,12 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "inspect-replay"
-version = "0.1.0"
+version = "0.2.0"
 description = "Deterministic, sample-aligned comparison of Inspect AI evaluation logs."
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
-authors = [{ name = "inspect-replay contributors" }]
+authors = [{ name = "Warren Smith" }]
 keywords = [
     "inspect-ai",
     "ai-evaluation",
@@ -50,6 +50,7 @@ inspect-replay = "inspect_replay.cli:main"
 [project.urls]
 Homepage = "https://github.com/repowazdogz-droid/inspect-replay"
 Repository = "https://github.com/repowazdogz-droid/inspect-replay"
+Documentation = "https://github.com/repowazdogz-droid/inspect-replay/tree/main/docs"
 Issues = "https://github.com/repowazdogz-droid/inspect-replay/issues"
 Changelog = "https://github.com/repowazdogz-droid/inspect-replay/blob/main/CHANGELOG.md"
 

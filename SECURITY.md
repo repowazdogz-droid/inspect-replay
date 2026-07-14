@@ -4,7 +4,17 @@
 
 | Version | Supported |
 | --- | --- |
-| 0.1.x | yes |
+| 0.2.x | yes |
+| 0.1.x | no |
+
+**0.1.0 is superseded and should not be used.** It contains known security and
+correctness defects that 0.2.0 fixes: a terminal-control-injection issue (a
+crafted `.eval` could inject ANSI escapes into the text report and forge a
+verdict), a dependency floor that did not work (`inspect_ai>=0.3.100`), an exit
+code that reported a comparison as "unchanged" when no sample could be aligned,
+and a sample-alignment bug that mislabelled chat-format regressions. See the
+[CHANGELOG](CHANGELOG.md) for the full list. The `v0.1.0` git tag is left intact
+for history; it is not a supported release.
 
 ## Reporting a vulnerability
 
