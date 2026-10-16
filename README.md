@@ -128,8 +128,10 @@ was meant to.
 ## Install
 
 ```console
-pipx install inspect-replay      # or: pip install inspect-replay
+pipx install inspect-replay
 ```
+
+or `pip install inspect-replay`.
 
 For development, from a clone:
 
