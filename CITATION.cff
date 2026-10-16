@@ -1,13 +1,9 @@
 cff-version: 1.2.0
 message: "If you use inspect-replay in your work, please cite it as below."
-title: "inspect-replay: deterministic, sample-aligned comparison of Inspect AI evaluation logs"
+title: "inspect-replay"
 abstract: >-
-  A command-line tool that compares two Inspect AI .eval logs and reports what
-  changed in configuration, headline metrics, samples, scores, and errors. It is
-  deterministic, read-only, and deliberate about the difference between
-  "unchanged" and "we cannot tell": unrecorded fields are reported as UNKNOWN,
-  a comparison that could not be performed is NOT_COMPARABLE rather than a false
-  green, and the tool reports co-occurrence rather than asserting causation.
+  inspect-replay compares two Inspect AI evaluation logs sample by sample and
+  never reports an unrecorded field or an unalignable comparison as unchanged.
 type: software
 authors:
   - family-names: Smith

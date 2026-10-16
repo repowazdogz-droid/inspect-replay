@@ -52,7 +52,7 @@ class Status(StrEnum):
     CHANGED = "CHANGED"
     ADDED = "ADDED"
     REMOVED = "REMOVED"
-    UNKNOWN = "UNKNOWN"        # the schema has this field; the log did not record it
+    UNKNOWN = "UNKNOWN"  # the schema has this field; the log did not record it
     NOT_CHECKED = "NOT_CHECKED"  # this tool does not compare it, and says why
 ```
 
@@ -67,7 +67,7 @@ fact the data does not support.
 class Verdict(StrEnum):
     UNCHANGED = "UNCHANGED"
     CHANGED = "CHANGED"
-    NOT_COMPARABLE = "NOT_COMPARABLE"   # exit code 3
+    NOT_COMPARABLE = "NOT_COMPARABLE"  # exit code 3
 ```
 
 `NOT_COMPARABLE` exists because the exit code is what a CI gate acts on. If no

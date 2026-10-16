@@ -1,23 +1,25 @@
 # inspect-replay
 
-Deterministic, sample-aligned comparison of two [Inspect AI](https://inspect.aisi.org.uk)
-evaluation logs.
+`inspect-replay` compares two Inspect AI evaluation logs sample by sample and never reports an unrecorded field or an unalignable comparison as unchanged.
 
 [![CI](https://github.com/repowazdogz-droid/inspect-replay/actions/workflows/ci.yml/badge.svg)](https://github.com/repowazdogz-droid/inspect-replay/actions/workflows/ci.yml)
-[![Python 3.11–3.13](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://www.python.org/)
-[![Checked: mypy --strict, ruff](https://img.shields.io/badge/checked-mypy%20--strict%20%C2%B7%20ruff-brightgreen)](pyproject.toml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/repowazdogz-droid/inspect-replay)](https://github.com/repowazdogz-droid/inspect-replay/releases/latest)
 
-An Inspect evaluation result moved between two runs. You have the two `.eval`
-logs and one question: what changed? `inspect-replay` answers it by comparing the
-recorded state of the two runs. It reports which configuration fields differ,
-which headline metrics moved, which samples regressed, recovered, or errored, and
-which samples could not be compared at all, and it is deliberate about the
-difference between "unchanged" and "we cannot tell".
+## Try it
+
+Two example logs ship in `examples/`. With [pipx](https://pipx.pypa.io):
 
 ```console
-$ inspect-replay compare examples/baseline.eval examples/sample-regression.eval
+git clone https://github.com/repowazdogz-droid/inspect-replay
+cd inspect-replay
+pipx install .
+inspect-replay compare examples/baseline.eval examples/sample-regression.eval
+inspect-replay compare examples/baseline.eval examples/baseline.eval
 ```
+
+The first comparison exits `1` (differences found) and the second exits `0`
+(identical logs). CI runs these commands after `pipx install .` on a clean
+runner. The first one prints:
 
 ```
 Evaluation: CHANGED
@@ -67,6 +69,42 @@ The third observation is the point of the tool. Accuracy fell and three samples
 moved, but nothing in the recorded configuration accounts for it, so the report
 says exactly that instead of blaming a plausible-looking field.
 
+## What this does not show
+
+Read this before you trust a report. The full version is in
+[docs/assurance-boundary.md](docs/assurance-boundary.md).
+
+- **It does not assert causation.** It reads two snapshots and cannot hold a
+  variable fixed, so it reports co-occurrence, not cause. The wording is guarded
+  at build time (see above). The guard covers text the tool authors, not strings
+  it quotes from a log, and it catches wording, not implication.
+- **A numeric score change is not a regression.** If a scorer emits 0.9 then 0.4,
+  no threshold in the log says what passing means; that is `SCORE_CHANGED`, not
+  `newly_failing`. Only `"C"`/`"I"`/`"P"`/`"N"`, booleans, and exactly `1`/`0`
+  carry a correctness reading (`"C"` to `"P"` and `"C"` to `"N"` are regressions:
+  the answer is no longer correct).
+- **Different scorers are not comparable.** `exact_match="C"` and
+  `model_graded_qa=0.9` do not measure the same thing; that is
+  `SCORES_NOT_COMPARABLE`, not a manufactured regression.
+- **A reused sample id with a changed input is not the same sample.** If a dataset
+  edits a question but keeps its id, the sample is `INPUT_CHANGED` and its scores
+  are not compared.
+- **It never aligns by position unless asked.** If no stable key works it reports
+  that it could not align the samples rather than guessing.
+  `--allow-positional-alignment` forces it and labels every conclusion unreliable.
+- **It does not reproduce provider outputs.** "Replay" here means reconstructing
+  and comparing the recorded state, not re-running the model. The tool never
+  calls a model and never re-runs a task.
+
+## What it does
+
+An Inspect evaluation result moved between two runs. You have the two `.eval`
+logs and one question: what changed? `inspect-replay` answers it by comparing the
+recorded state of the two runs. It reports which configuration fields differ,
+which headline metrics moved, which samples regressed, recovered, or errored, and
+which samples could not be compared at all. "Unchanged" and "we cannot tell" are
+reported as different things.
+
 ## Why it exists
 
 Comparing two Inspect runs by hand means opening two large archives and reading
@@ -87,31 +125,16 @@ this number change" in CI or during debugging: to gate a regression, to explain
 a moved metric in a report, or to check that a config edit changed only what it
 was meant to.
 
-## Quickstart
-
-Two sample logs ship in `examples/`. With [pipx](https://pipx.pypa.io):
-
-```console
-git clone https://github.com/repowazdogz-droid/inspect-replay
-cd inspect-replay
-pipx install .
-inspect-replay compare examples/baseline.eval examples/sample-regression.eval   # CHANGED, exit 1
-inspect-replay compare examples/baseline.eval examples/baseline.eval            # UNCHANGED, exit 0
-```
-
-CI runs exactly these commands after `pipx install .` on a clean runner.
-
 ## Install
 
-Not yet published to PyPI. Install from source.
+Not yet published to PyPI. For development, from a clone:
 
 ```console
-git clone https://github.com/repowazdogz-droid/inspect-replay
-cd inspect-replay
 pip install -e ".[dev]"
-pytest                       # 117 tests
-inspect-replay compare examples/baseline.eval examples/sample-regression.eval
+pytest
 ```
+
+The suite has 117 tests (`pytest --collect-only -q` collects 117).
 
 Or install the package alone (without the bundled example logs):
 
@@ -160,10 +183,10 @@ the build (it does not suppress `2` or `3`, which are errors, not differences):
 from inspect_replay import compare, render, to_dict
 
 result = compare("baseline.eval", "candidate.eval")
-print(result.verdict)                 # Verdict.CHANGED
-print(result.summary.newly_failing)   # 2
-print(render(result))                 # the text report shown above
-payload = to_dict(result)             # machine-readable dict, schema_version "0.1"
+print(result.verdict)  # Verdict.CHANGED
+print(result.summary.newly_failing)  # 2
+print(render(result))  # the text report shown above
+payload = to_dict(result)  # machine-readable dict, schema_version "0.1"
 ```
 
 ## What it compares
@@ -250,33 +273,6 @@ Each item is enforced by a mechanism, not by intention. The named tests live in
 - **Explicit assurance boundary.** Unrecorded fields are `UNKNOWN`, never
   "unchanged"; a comparison that could not be performed is `NOT_COMPARABLE` with
   a distinct exit code, never a false green.
-
-## What it will not tell you
-
-This is the part worth reading before you trust a report. The full version is in
-[docs/assurance-boundary.md](docs/assurance-boundary.md).
-
-- **It does not assert causation.** It reads two snapshots and cannot hold a
-  variable fixed, so it reports co-occurrence, not cause. The wording is guarded
-  at build time (see above). The guard covers text the tool authors, not strings
-  it quotes from a log, and it catches wording, not implication.
-- **A numeric score change is not a regression.** If a scorer emits 0.9 then 0.4,
-  no threshold in the log says what passing means; that is `SCORE_CHANGED`, not
-  `newly_failing`. Only `"C"`/`"I"`/`"P"`/`"N"`, booleans, and exactly `1`/`0`
-  carry a correctness reading (`"C"` to `"P"` and `"C"` to `"N"` are regressions:
-  the answer is no longer correct).
-- **Different scorers are not comparable.** `exact_match="C"` and
-  `model_graded_qa=0.9` do not measure the same thing; that is
-  `SCORES_NOT_COMPARABLE`, not a manufactured regression.
-- **A reused sample id with a changed input is not the same sample.** If a dataset
-  edits a question but keeps its id, the sample is `INPUT_CHANGED` and its scores
-  are not compared.
-- **It never aligns by position unless asked.** If no stable key works it reports
-  that it could not align the samples rather than guessing.
-  `--allow-positional-alignment` forces it and labels every conclusion unreliable.
-- **It does not reproduce provider outputs.** "Replay" here means reconstructing
-  and comparing the recorded state, not re-running the model. The tool never
-  calls a model and never re-runs a task.
 
 ## Security model
 
