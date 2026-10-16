@@ -127,7 +127,11 @@ was meant to.
 
 ## Install
 
-Not yet published to PyPI. For development, from a clone:
+```console
+pipx install inspect-replay      # or: pip install inspect-replay
+```
+
+For development, from a clone:
 
 ```console
 pip install -e ".[dev]"
@@ -136,11 +140,6 @@ pytest
 
 The suite has 117 tests (`pytest --collect-only -q` collects 117).
 
-Or install the package alone (without the bundled example logs):
-
-```console
-pip install git+https://github.com/repowazdogz-droid/inspect-replay
-```
 
 Requires Python 3.11 or newer and `inspect_ai>=0.3.180` (the oldest version the
 suite is verified against; see [engineering guarantees](#engineering-guarantees)).
@@ -298,7 +297,7 @@ plausible next steps, in rough priority order. None is committed.
   reaching into `inspect_ai` internals.
 - Comparison of more than two logs (a run series), if the alignment story stays
   honest across N.
-- Publication to PyPI once the API and JSON schema are frozen at 1.0.
+- A 1.0 release that freezes the CLI exit codes and the JSON report schema.
 
 Out of scope, on purpose: re-running evaluations, model calls, a web UI, LLM
 judging of differences, statistical significance testing (use `inspect-mlflow`).
