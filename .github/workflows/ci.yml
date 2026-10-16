@@ -140,3 +140,12 @@ jobs:
           /tmp/fresh/bin/pip install dist/*.whl
           /tmp/fresh/bin/inspect-replay --version
           /tmp/fresh/bin/inspect-replay compare examples/baseline.eval examples/model-change.eval --json > /dev/null || test $? -eq 1
+
+      - name: README quickstart works after pipx install .
+        run: |
+          pipx install .
+          inspect-replay compare examples/baseline.eval examples/sample-regression.eval && {
+            echo "::error::quickstart: expected exit 1 (CHANGED) on the regression example"
+            exit 1
+          }
+          inspect-replay compare examples/baseline.eval examples/baseline.eval

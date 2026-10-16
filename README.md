@@ -87,6 +87,20 @@ this number change" in CI or during debugging: to gate a regression, to explain
 a moved metric in a report, or to check that a config edit changed only what it
 was meant to.
 
+## Quickstart
+
+Two sample logs ship in `examples/`. With [pipx](https://pipx.pypa.io):
+
+```console
+git clone https://github.com/repowazdogz-droid/inspect-replay
+cd inspect-replay
+pipx install .
+inspect-replay compare examples/baseline.eval examples/sample-regression.eval   # CHANGED, exit 1
+inspect-replay compare examples/baseline.eval examples/baseline.eval            # UNCHANGED, exit 0
+```
+
+CI runs exactly these commands after `pipx install .` on a clean runner.
+
 ## Install
 
 Not yet published to PyPI. Install from source.
