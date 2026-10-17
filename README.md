@@ -128,10 +128,11 @@ was meant to.
 ## Install
 
 ```console
-pipx install inspect-replay
+pipx install git+https://github.com/repowazdogz-droid/inspect-replay
 ```
 
-or `pip install inspect-replay`.
+or `pip install git+https://github.com/repowazdogz-droid/inspect-replay`.
+It is not published to PyPI.
 
 For development, from a clone:
 
